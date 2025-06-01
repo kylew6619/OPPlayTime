@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +147,7 @@ public class PlaytimeConfig {
 
     private void loadRewards() {
         rewards = new HashMap<>();
-        ConfigurationSection rewardsSection = config.ConfigurationSection("rewards");
+        ConfigurationSection rewardsSection = config.getConfigurationSection("rewards"); // Corrected method call
         if (rewardsSection == null) return;
 
         for (String key : rewardsSection.getKeys(false)) {

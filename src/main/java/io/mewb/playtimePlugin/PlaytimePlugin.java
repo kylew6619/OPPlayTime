@@ -15,7 +15,7 @@ public final class PlaytimePlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Create data folder if it doesn't exist
+        // Create a data folder if it doesn't exist
         if (!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }

@@ -118,8 +118,9 @@ public class PlaytimeGUI implements Listener {
                 playerName = "Unknown Player";
             }
 
+            String finalPlayerName = playerName;
             List<String> lore = plugin.getPlaytimeConfig().getPlayerHeadLore().stream()
-                    .map(line -> line.replace("%player%", playerName)
+                    .map(line -> line.replace("%player%", finalPlayerName)
                             .replace("%active%", plugin.getPlaytimeManager().formatTime(pp.getActiveTime()))
                             .replace("%afk%", plugin.getPlaytimeManager().formatTime(pp.getAfkTime()))
                             .replace("%total%", plugin.getPlaytimeManager().formatTime(pp.getTotalTime())))

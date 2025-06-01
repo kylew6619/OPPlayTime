@@ -42,7 +42,7 @@ public class ItemBuilder {
 
     public ItemBuilder setGlow(boolean glow) {
         if (glow) {
-            itemStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+            itemStack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
             ItemMeta meta = itemStack.getItemMeta();
             if (meta != null) {
                 meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -51,7 +51,7 @@ public class ItemBuilder {
         } else {
             ItemMeta meta = itemStack.getItemMeta();
             if (meta != null) {
-                meta.removeEnchant(Enchantment.DURABILITY);
+                meta.removeEnchant(Enchantment.UNBREAKING);
                 itemStack.setItemMeta(meta);
             }
         }

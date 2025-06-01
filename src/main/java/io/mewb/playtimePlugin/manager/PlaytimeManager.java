@@ -1,3 +1,4 @@
+
 package io.mewb.playtimePlugin.manager;
 
 
@@ -45,9 +46,8 @@ public class PlaytimeManager {
         long activeTime = config.getLong("activeTime", 0);
         long afkTime = config.getLong("afkTime", 0);
         long lastActivityTime = config.getLong("lastActivityTime", System.currentTimeMillis());
-        Set<Long> claimedRewards = config.getLongList("claimedRewards").stream()
-                .boxed()
-                .collect(Collectors.toSet());
+        // Removed .boxed() as getLongList already returns List<Long>
+        Set<Long> claimedRewards = new HashSet<>(config.getLongList("claimedRewards"));
 
         PlaytimePlayer playtimePlayer = new PlaytimePlayer(uuid, activeTime, afkTime, lastActivityTime, false, claimedRewards);
         players.put(uuid, playtimePlayer);
