@@ -1,0 +1,159 @@
+afk:
+  enabled: true
+  timeout: 300 # Time in seconds before marked AFK (e.g., 5 minutes)
+  messages:
+    afk:
+      enabled: true
+      message: "&eYou are now AFK."
+      title:
+        enabled: true
+        main: "&7AFK Mode"
+        subtitle: "&fYou're no longer earning active playtime."
+        fadein: 10
+        stay: 40
+        fadeout: 10
+    back:
+      enabled: true
+      message: "&aWelcome back! You're no longer AFK."
+      title:
+        enabled: true
+        main: "&a&lBack to Active!"
+        subtitle: "&fPlaytime tracking resumed."
+        fadein: 10
+        stay: 40
+        fadeout: 10
+
+playtime_gui:
+  title: "&bYour Playtime Menu"
+  size: 27
+  filler:
+    enabled: true
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    name: " "
+    lore: []
+    glow: false
+  items:
+    your_playtime:
+      slot: 11
+      material: CLOCK
+      name: "&eYour Playtime"
+      lore:
+        - "&7Active: &f%active%"
+        - "&7AFK: &f%afk%"
+        - "&7Total: &f%total%"
+      glow: true
+    playtimetop:
+      slot: 13
+      material: PLAYER_HEAD
+      name: "&6Top Playtimes"
+      lore:
+        - "&7Click to view leaderboard"
+      glow: true
+    playtime_rewards:
+      slot: 15
+      material: CHEST
+      name: "&aPlaytime Rewards"
+      lore:
+        - "&7Click to view your rewards"
+      glow: false
+
+playtimetop_gui:
+  title: "&dPlaytime Leaderboard"
+  size: 54
+  items_per_page: 28
+  filler:
+    enabled: true
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+    lore: []
+    glow: false
+  nextPageItem:
+    material: ARROW
+    name: "&6Next Page"
+    lore:
+      - "&7Click to view more players"
+    glow: true
+    slot: 50 # Example slot for next page button
+  prevPageItem:
+    material: ARROW
+    name: "&6Previous Page"
+    lore:
+      - "&7Go back"
+    glow: true
+    slot: 48 # Example slot for previous page button
+  player_head_lore:
+    - "&e%player%"
+    - "&7Active: &f%active%"
+    - "&7AFK: &f%afk%"
+    - "&7Total: &f%total%"
+
+rewards:
+  '3600': # 1 hour in seconds
+    slot: 11
+    unlocked:
+      material: GOLD_INGOT
+      name: "&a1 Hour Reward"
+      lore:
+        - "&7You’ve played 1 hour!"
+        - "&eReward: 10x Gold Ingots"
+      glow: true
+    locked:
+      material: BARRIER
+      name: "&cLocked"
+      lore:
+        - "&7Play %playtime_required% to unlock this reward."
+    title:
+      main: "&a&lReward Unlocked!"
+      subtitle: "&fYou’ve reached 1 hour of playtime!"
+      fadein: 10
+      stay: 40
+      fadeout: 10
+    commands:
+      - "give %player% gold_ingot 10"
+      - "broadcast &a%player% &7has unlocked the &f1 Hour Playtime Reward&7!"
+  '36000': # 10 hours in seconds
+    slot: 13
+    unlocked:
+      material: DIAMOND
+      name: "&a10 Hour Reward"
+      lore:
+        - "&7You’ve played 10 hours!"
+        - "&eReward: 5x Crate Keys"
+      glow: true
+    locked:
+      material: BARRIER
+      name: "&cLocked"
+      lore:
+        - "&7Play %playtime_required% to unlock this reward."
+    title:
+      main: "&a&lReward Unlocked!"
+      subtitle: "&fYou’ve reached 10 hours of playtime!"
+      fadein: 10
+      stay: 40
+      fadeout: 10
+    commands:
+      - "give %player% diamond 5"
+      - "broadcast &a%player% &7has unlocked the &f10 Hour Playtime Reward&7!"
+  '86400': # 24 hours in seconds
+    slot: 15
+    unlocked:
+      material: NETHERITE_INGOT
+      name: "&a24 Hour Reward"
+      lore:
+        - "&7You’ve played 24 hours!"
+        - "&eReward: 1x Netherite Ingot"
+      glow: true
+    locked:
+      material: BARRIER
+      name: "&cLocked"
+      lore:
+        - "&7Play %playtime_required% to unlock this reward."
+    title:
+      main: "&a&lReward Unlocked!"
+      subtitle: "&fYou’ve reached 24 hours of playtime!"
+      fadein: 10
+      stay: 40
+      fadeout: 10
+    commands:
+      - "give %player% netherite_ingot 1"
+      - "broadcast &a%player% &7has unlocked the &f24 Hour Playtime Reward&7!"
