@@ -1,8 +1,8 @@
 package io.mewb.playtimePlugin.gui;
 
 
-// Corrected imports for TriumphGUI builders and GUI classes - removed GuiBuilder and PaginatedBuilder imports
-import dev.triumphteam.gui.guis.Gui; // This is for the simple GUI
+
+import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import io.mewb.playtimePlugin.PlaytimePlugin;
@@ -22,11 +22,17 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+// Imports for Adventure API Components
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+
 // PlaytimeGUI no longer needs to implement Listener or have @EventHandler methods for clicks,
 // as TriumphGUI handles this internally.
 public class PlaytimeGUI {
 
     private final PlaytimePlugin plugin;
+    // Pre-create the serializer for efficiency
+    private final LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.legacyAmpersand();
 
     public PlaytimeGUI(PlaytimePlugin plugin) {
         this.plugin = plugin;
@@ -34,15 +40,16 @@ public class PlaytimeGUI {
     }
 
     public void openMainMenu(Player player) {
-        String title = plugin.getPlaytimeConfig().color(plugin.getPlaytimeConfig().getMainGUITitle());
+        String titleString = plugin.getPlaytimeConfig().color(plugin.getPlaytimeConfig().getMainGUITitle());
+        Component titleComponent = legacySerializer.deserialize(titleString); // Convert String to Component
         int size = plugin.getPlaytimeConfig().getMainGUISize();
 
-        // Corrected: Use Gui.gui() to get the builder for simple GUIs
+        // Corrected: Use Gui.gui() to get the builder for simple GUIs, and .create() to build
         Gui gui = Gui.gui()
-                .title(title)
+                .title(titleComponent) // Use Component for title
                 .rows(size / 9) // Convert total slots to rows
                 .disableAllInteractions() // Prevent players from taking items
-                .build();
+                .create(); // Corrected: Use .create()
 
         // Fill with filler item
         GUIItem filler = plugin.getPlaytimeConfig().getMainGUIFiller();
@@ -86,7 +93,7 @@ public class PlaytimeGUI {
                 GuiItem guiItem = new GuiItem(itemStack, event -> {
                     event.setCancelled(true); // Always cancel interaction
                     if (key.equals("playtimetop")) {
-                        openLeaderboardGUI(player); // Open leaderboard from here
+                        openLeaderboardGUI(player, 1); // Open leaderboard from here
                     } else if (key.equals("playtime_rewards")) {
                         openRewardsGUI(player); // Open rewards from here
                     }
@@ -97,18 +104,19 @@ public class PlaytimeGUI {
         gui.open(player);
     }
 
-    public void openLeaderboardGUI(Player player) {
-        String title = plugin.getPlaytimeConfig().color(plugin.getPlaytimeConfig().getLeaderboardGUITitle());
+    public void openLeaderboardGUI(Player player, int i) {
+        String titleString = plugin.getPlaytimeConfig().color(plugin.getPlaytimeConfig().getLeaderboardGUITitle());
+        Component titleComponent = legacySerializer.deserialize(titleString); // Convert String to Component
         int size = plugin.getPlaytimeConfig().getLeaderboardGUISize();
         int itemsPerPage = plugin.getPlaytimeConfig().getLeaderboardItemsPerPage();
 
-        // Corrected: Use Gui.paginated() to get the builder for paginated GUIs
+        // Corrected: Use Gui.paginated() to get the builder for paginated GUIs, and .create() to build
         PaginatedGui gui = Gui.paginated()
-                .title(title)
+                .title(titleComponent) // Use Component for title
                 .rows(size / 9) // Convert total slots to rows
                 .pageSize(itemsPerPage)
                 .disableAllInteractions()
-                .build();
+                .create(); // Corrected: Use .create()
 
         // Fill with filler item
         GUIItem filler = plugin.getPlaytimeConfig().getLeaderboardGUIFiller();
@@ -137,8 +145,9 @@ public class PlaytimeGUI {
                     if (playerName == null) playerName = "Unknown Player";
                 }
 
+                String finalPlayerName = playerName;
                 List<String> lore = plugin.getPlaytimeConfig().getPlayerHeadLore().stream()
-                        .map(line -> line.replace("%player%", playerName)
+                        .map(line -> line.replace("%player%", finalPlayerName)
                                 .replace("%active%", plugin.getPlaytimeManager().formatTime(pp.getActiveTime()))
                                 .replace("%afk%", plugin.getPlaytimeManager().formatTime(pp.getAfkTime()))
                                 .replace("%total%", plugin.getPlaytimeManager().formatTime(pp.getTotalTime())))
@@ -192,15 +201,16 @@ public class PlaytimeGUI {
 
 
     public void openRewardsGUI(Player player) {
-        String title = plugin.getPlaytimeConfig().color("&aPlaytime Rewards");
+        String titleString = plugin.getPlaytimeConfig().color("&aPlaytime Rewards");
+        Component titleComponent = legacySerializer.deserialize(titleString); // Convert String to Component
         int size = 54; // Fixed size for rewards GUI
 
-        // Corrected: Use Gui.gui() to get the builder for simple GUIs
+        // Corrected: Use Gui.gui() to get the builder for simple GUIs, and .create() to build
         Gui gui = Gui.gui()
-                .title(title)
+                .title(titleComponent) // Use Component for title
                 .rows(size / 9)
                 .disableAllInteractions()
-                .build();
+                .create(); // Corrected: Use .create()
 
         // Fill with filler item (if configured)
         GUIItem filler = plugin.getPlaytimeConfig().getMainGUIFiller(); // Re-using main GUI filler
