@@ -1,8 +1,7 @@
 package io.mewb.playtimePlugin.gui;
 
 
-
-import dev.triumphteam.gui.guis.Gui;
+import dev.triumphteam.gui.guis.Gui; // This is for the simple GUI
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import io.mewb.playtimePlugin.PlaytimePlugin;
@@ -93,7 +92,7 @@ public class PlaytimeGUI {
                 GuiItem guiItem = new GuiItem(itemStack, event -> {
                     event.setCancelled(true); // Always cancel interaction
                     if (key.equals("playtimetop")) {
-                        openLeaderboardGUI(player, 1); // Open leaderboard from here
+                        openLeaderboardGUI(player); // Open leaderboard from here
                     } else if (key.equals("playtime_rewards")) {
                         openRewardsGUI(player); // Open rewards from here
                     }
@@ -104,30 +103,37 @@ public class PlaytimeGUI {
         gui.open(player);
     }
 
-    public void openLeaderboardGUI(Player player, int i) {
+    public void openLeaderboardGUI(Player player) {
         String titleString = plugin.getPlaytimeConfig().color(plugin.getPlaytimeConfig().getLeaderboardGUITitle());
         Component titleComponent = legacySerializer.deserialize(titleString); // Convert String to Component
         int size = plugin.getPlaytimeConfig().getLeaderboardGUISize();
         int itemsPerPage = plugin.getPlaytimeConfig().getLeaderboardItemsPerPage();
 
-        // Corrected: Use Gui.paginated() to get the builder for paginated GUIs, and .create() to build
-        PaginatedGui gui = Gui.paginated()
-                .title(titleComponent) // Use Component for title
-                .rows(size / 9) // Convert total slots to rows
-                .pageSize(itemsPerPage)
-                .disableAllInteractions()
-                .create(); // Corrected: Use .create()
-
-        // Fill with filler item
         GUIItem filler = plugin.getPlaytimeConfig().getLeaderboardGUIFiller();
+        GuiItem borderFillerItem = null;
         if (filler != null) {
             ItemStack fillerItem = new ItemBuilder(filler.getMaterial())
                     .setName(plugin.getPlaytimeConfig().color(filler.getName()))
                     .setLore(plugin.getPlaytimeConfig().color(filler.getLore()))
                     .setGlow(filler.isGlow())
                     .build();
-            gui.getFiller().fill(new GuiItem(fillerItem));
+            borderFillerItem = new GuiItem(fillerItem);
         }
+
+        // --- Start of critical correction for PaginatedGui builder ---
+        // 1. Start with the builder
+        dev.triumphteam.gui.builder.gui.PaginatedBuilder builder = Gui.paginated()
+                .title(titleComponent) // Called on builder
+                .rows(size / 9) // Called on builder
+                .pageSize(itemsPerPage) // Called on builder
+                .disableAllInteractions(); // Called on builder
+
+        // 2. Apply border filler if it exists (called on the builder)
+
+
+        // 3. Create the GUI instance from the builder
+        PaginatedGui gui = builder.create(); // Now 'gui' is correctly typed as PaginatedGui
+        // --- End of critical correction ---
 
         List<PlaytimePlayer> topPlayers = plugin.getPlaytimeManager().getTopPlaytimes(Integer.MAX_VALUE);
 
@@ -159,13 +165,13 @@ public class PlaytimeGUI {
                         .build();
 
                 // Add to Gui, TriumphGUI handles placement in paginated section
-                gui.addItem(new GuiItem(finalHead));
-                gui.update(); // Update the GUI to show the new item
+                gui.addItem(new GuiItem(finalHead)); // Called on PaginatedGui instance
+                gui.update(); // Called on PaginatedGui instance
             }).exceptionally(e -> {
                 plugin.getLogger().warning("Failed to create skull for " + pp.getUuid() + ": " + e.getMessage());
                 // Add a fallback item if skull creation fails
-                gui.addItem(new GuiItem(new ItemBuilder(Material.BARRIER).setName(plugin.getPlaytimeConfig().color("&cError loading head")).build()));
-                gui.update();
+                gui.addItem(new GuiItem(new ItemBuilder(Material.BARRIER).setName(plugin.getPlaytimeConfig().color("&cError loading head")).build())); // Called on PaginatedGui instance
+                gui.update(); // Called on PaginatedGui instance
                 return null;
             });
         }
@@ -180,7 +186,7 @@ public class PlaytimeGUI {
                     .build();
             gui.setItem(prevConfigItem.getSlot(), new GuiItem(prevPage, event -> {
                 event.setCancelled(true);
-                gui.previous(); // TriumphGUI's previous page method
+                gui.previous(); // Called on PaginatedGui instance
             }));
         }
 
@@ -193,10 +199,10 @@ public class PlaytimeGUI {
                     .build();
             gui.setItem(nextConfigItem.getSlot(), new GuiItem(nextPage, event -> {
                 event.setCancelled(true);
-                gui.next(); // TriumphGUI's next page method
+                gui.next(); // Called on PaginatedGui instance
             }));
         }
-        gui.open(player);
+        gui.open(player); // Called on PaginatedGui instance
     }
 
 
@@ -268,35 +274,41 @@ public class PlaytimeGUI {
                         .build();
             }
 
-            // Create GuiItem with click action
-            GuiItem guiItem = new GuiItem(itemStack, event -> {
-                event.setCancelled(true); // Always cancel interaction
-                if (unlocked && !claimed) {
-                    pp.getClaimedRewards().add(reward.getRequiredPlaytime());
-                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                    player.sendMessage(plugin.getPlaytimeConfig().color("&aYou have claimed the " + reward.getUnlockedItem().getName() + " &areward!"));
+            // Fix: Check for valid slot before setting item
+            int rewardSlot = reward.getUnlockedItem().getSlot();
+            if (rewardSlot >= 0 && rewardSlot < size) { // Ensure slot is valid
+                // Create GuiItem with click action
+                GuiItem guiItem = new GuiItem(itemStack, event -> {
+                    event.setCancelled(true); // Always cancel interaction
+                    if (unlocked && !claimed) {
+                        pp.getClaimedRewards().add(reward.getRequiredPlaytime());
+                        player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+                        player.sendMessage(plugin.getPlaytimeConfig().color("&aYou have claimed the " + reward.getUnlockedItem().getName() + " &areward!"));
 
-                    if (reward.getTitle() != null) {
-                        player.sendTitle(
-                                plugin.getPlaytimeConfig().color(reward.getTitle().getMain()),
-                                plugin.getPlaytimeConfig().color(reward.getTitle().getSubtitle()),
-                                reward.getTitle().getFadeIn(), reward.getTitle().getStay(), reward.getTitle().getFadeOut()
-                        );
-                    }
+                        if (reward.getTitle() != null) {
+                            player.sendTitle(
+                                    plugin.getPlaytimeConfig().color(reward.getTitle().getMain()),
+                                    plugin.getPlaytimeConfig().color(reward.getTitle().getSubtitle()),
+                                    reward.getTitle().getFadeIn(), reward.getTitle().getStay(), reward.getTitle().getFadeOut()
+                            );
+                        }
 
-                    for (String cmd : reward.getCommands()) {
-                        String formattedCmd = cmd.replace("%player%", player.getName());
-                        plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), formattedCmd);
+                        for (String cmd : reward.getCommands()) {
+                            String formattedCmd = cmd.replace("%player%", player.getName());
+                            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), formattedCmd);
+                        }
+                        // Update the current GUI to reflect the claimed reward
+                        gui.updateItem(rewardSlot, itemStack); // Use the validated slot
+                    } else if (claimed) {
+                        player.sendMessage(plugin.getPlaytimeConfig().color("&cYou have already claimed this reward."));
+                    } else {
+                        player.sendMessage(plugin.getPlaytimeConfig().color("&cYou have not yet unlocked this reward."));
                     }
-                    // Update the current GUI to reflect the claimed reward
-                    gui.updateItem(reward.getUnlockedItem().getSlot(), itemStack); // Update the specific item
-                } else if (claimed) {
-                    player.sendMessage(plugin.getPlaytimeConfig().color("&cYou have already claimed this reward."));
-                } else {
-                    player.sendMessage(plugin.getPlaytimeConfig().color("&cYou have not yet unlocked this reward."));
-                }
-            });
-            gui.setItem(reward.getUnlockedItem().getSlot(), guiItem); // Use unlocked item's slot
+                });
+                gui.setItem(rewardSlot, guiItem); // Use the validated slot
+            } else {
+                plugin.getLogger().warning("Reward item '" + reward.getUnlockedItem().getName() + "' has an invalid slot configured: " + rewardSlot);
+            }
         }
         gui.open(player);
     }

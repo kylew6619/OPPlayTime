@@ -54,7 +54,7 @@ public class PlaytimeCommandExecutor implements CommandExecutor {
                 player.sendMessage(plugin.getPlaytimeConfig().color("&cYou don't have permission to do that."));
                 return true;
             }
-            plugin.getPlaytimeGUI().openLeaderboardGUI(player, 1);
+            plugin.getPlaytimeGUI().openLeaderboardGUI(player);
             return true;
         } else if (command.getName().equalsIgnoreCase("playtimereset")) {
             if (!sender.hasPermission("playtime.reset")) {

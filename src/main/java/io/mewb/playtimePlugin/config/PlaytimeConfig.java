@@ -119,13 +119,13 @@ public class PlaytimeConfig {
 
         mainGUITitle = guiSection.getString("title", "&bYour Playtime Menu");
         mainGUISize = guiSection.getInt("size", 27);
-        mainGUIFiller = loadGUIItem(guiSection.getConfigurationSection("filler"));
+        mainGUIFiller = loadGUIItem(guiSection.getConfigurationSection("filler")); // Uses the original loadGUIItem
 
         mainGUIItems = new HashMap<>();
         ConfigurationSection itemsSection = guiSection.getConfigurationSection("items");
         if (itemsSection != null) {
             for (String key : itemsSection.getKeys(false)) {
-                mainGUIItems.put(key, loadGUIItem(itemsSection.getConfigurationSection(key)));
+                mainGUIItems.put(key, loadGUIItem(itemsSection.getConfigurationSection(key))); // Uses the original loadGUIItem
             }
         }
     }
@@ -137,9 +137,9 @@ public class PlaytimeConfig {
         leaderboardGUITitle = guiSection.getString("title", "&dPlaytime Leaderboard");
         leaderboardGUISize = guiSection.getInt("size", 54);
         leaderboardItemsPerPage = guiSection.getInt("items_per_page", 28);
-        leaderboardGUIFiller = loadGUIItem(guiSection.getConfigurationSection("filler"));
-        leaderboardNextPageItem = loadGUIItem(guiSection.getConfigurationSection("nextPageItem"));
-        leaderboardPrevPageItem = loadGUIItem(guiSection.getConfigurationSection("prevPageItem"));
+        leaderboardGUIFiller = loadGUIItem(guiSection.getConfigurationSection("filler")); // Uses the original loadGUIItem
+        leaderboardNextPageItem = loadGUIItem(guiSection.getConfigurationSection("nextPageItem")); // Uses the original loadGUIItem
+        leaderboardPrevPageItem = loadGUIItem(guiSection.getConfigurationSection("prevPageItem")); // Uses the original loadGUIItem
         playerHeadLore = guiSection.getStringList("player_head_lore").stream()
                 .map(s -> s.replace("%player%", "PlayerName")) // Placeholder for example
                 .collect(Collectors.toList());
@@ -147,7 +147,7 @@ public class PlaytimeConfig {
 
     private void loadRewards() {
         rewards = new HashMap<>();
-        ConfigurationSection rewardsSection = config.getConfigurationSection("rewards"); // Corrected method call
+        ConfigurationSection rewardsSection = config.getConfigurationSection("rewards");
         if (rewardsSection == null) return;
 
         for (String key : rewardsSection.getKeys(false)) {
@@ -155,8 +155,13 @@ public class PlaytimeConfig {
                 long playtime = Long.parseLong(key);
                 ConfigurationSection rewardSection = rewardsSection.getConfigurationSection(key);
                 if (rewardSection != null) {
-                    GUIItem unlocked = loadGUIItem(rewardSection.getConfigurationSection("unlocked"));
-                    GUIItem locked = loadGUIItem(rewardSection.getConfigurationSection("locked"));
+                    // Read the slot from the main reward section
+                    int rewardDisplaySlot = rewardSection.getInt("slot", -1);
+
+                    // Pass this slot to the overloaded loadGUIItem method
+                    GUIItem unlocked = loadGUIItem(rewardSection.getConfigurationSection("unlocked"), rewardDisplaySlot);
+                    GUIItem locked = loadGUIItem(rewardSection.getConfigurationSection("locked"), rewardDisplaySlot);
+
                     TitleData title = null;
                     ConfigurationSection titleSection = rewardSection.getConfigurationSection("title");
                     if (titleSection != null) {
@@ -177,6 +182,7 @@ public class PlaytimeConfig {
         }
     }
 
+    // Original loadGUIItem method (for items whose slot is defined within their own section)
     private GUIItem loadGUIItem(ConfigurationSection section) {
         if (section == null) return null;
         boolean enabled = section.getBoolean("enabled", false); // For filler
@@ -186,9 +192,23 @@ public class PlaytimeConfig {
         String name = section.getString("name", "Item");
         List<String> lore = section.getStringList("lore");
         boolean glow = section.getBoolean("glow", false);
-        int slot = section.getInt("slot", -1); // Slot is handled separately for main GUI items
+        int slot = section.getInt("slot", -1); // Reads slot from the section, defaults to -1
 
         return new GUIItem(material, name, lore, glow, slot);
+    }
+
+    // Overloaded loadGUIItem method to accept an explicit slot (for reward items)
+    private GUIItem loadGUIItem(ConfigurationSection section, int overrideSlot) {
+        if (section == null) return null;
+        boolean enabled = section.getBoolean("enabled", false); // For filler
+        if (section.contains("enabled") && !enabled) return null; // If filler is disabled
+
+        Material material = Material.valueOf(section.getString("material", "STONE").toUpperCase());
+        String name = section.getString("name", "Item");
+        List<String> lore = section.getStringList("lore");
+        boolean glow = section.getBoolean("glow", false);
+        // Use the overrideSlot directly, as the slot for rewards is defined in the parent section
+        return new GUIItem(material, name, lore, glow, overrideSlot);
     }
 
     public String color(String message) {

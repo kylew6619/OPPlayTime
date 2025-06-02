@@ -1,0 +1,42 @@
+main: io.mewb.playtimePlugin.PlaytimePlugin
+name: PlaytimePlugin
+version: 1.0.0
+api-version: 1.19 # Adjust based on your server version
+author: Mewb
+commands:
+  playtime:
+    description: Opens the playtime GUI or reloads the config.
+    usage: /playtime [reload]
+    permission: playtime.open
+    permission-message: You do not have permission to use this command.
+  playtimetop:
+    description: Opens the playtime leaderboard GUI.
+    usage: /playtimetop
+    permission: playtime.top
+    permission-message: You do not have permission to use this command.
+  playtimereset:
+    description: Resets a player's playtime data.
+    usage: /playtimereset <player>
+    permission: playtime.reset
+    permission-message: You do not have permission to use this command.
+  playtimeresetall:
+    description: Resets all players' playtime data.
+    usage: /playtimeresetall [confirm]
+    permission: playtime.resetall
+    permission-message: You do not have permission to use this command.
+permissions:
+  playtime.open:
+    description: Allows opening the main playtime GUI.
+    default: true
+  playtime.top:
+    description: Allows opening the playtime leaderboard GUI.
+    default: true
+  playtime.reset:
+    description: Allows resetting a specific player's playtime.
+    default: op
+  playtime.resetall:
+    description: Allows resetting all players' playtime.
+    default: op
+  playtime.admin:
+    description: Allows reloading the plugin config.
+    default: op
